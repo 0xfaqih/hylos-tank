@@ -34,6 +34,8 @@ class FaucetService {
         const headers = {
             'User-Agent': userAgent,
             'Accept': 'application/json, text/plain, */*',
+            'Origin': 'https://testnet.helioschain.network',
+            'Referer': 'https://testnet.helioschain.network/',
             'Accept-Language': 'en-US,en;q=0.9',
             'Accept-Encoding': 'gzip, deflate, br',
             'Connection': 'keep-alive',
@@ -180,15 +182,20 @@ class FaucetService {
             throw new Error('Invalid address provided');
         }
 
-        // Check if authenticated
+        // Check if authenticated and token is valid
         if (!this.authToken) {
             throw new Error('Authentication required - call authenticate() first');
+        }
+        
+        // Validate token before proceeding
+        const isTokenValid = await this.validateToken();
+        if (!isTokenValid) {
+            throw new Error('Token expired or invalid - please re-authenticate');
         }
 
         try {
             Helpers.log(`🚰 Claiming ${tokenType} tokens for ${address}`, 'INFO');
-            
-            // Get Turnstile site key from the faucet page
+
             const siteKey = "0x4AAAAAABhz7Yc1no53_eWA";
             
             // Solve captcha using 2captcha API v2
@@ -198,7 +205,7 @@ class FaucetService {
                 120
             );
             
-            const headers = this.generateHeaders();
+            const headers = this.generateHeaders(true);
             const url = `${this.baseUrl}/faucet/request`;
             
             const payload = {
