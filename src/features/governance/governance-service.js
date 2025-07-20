@@ -212,11 +212,13 @@ class GovernanceService {
 
             Helpers.log(`🗳️ Building vote calldata for proposal ${proposalId} (${support ? 'YES' : 'NO'})`, 'SUCCESS');
 
+            const nonce = await this.provider.getTransactionCount(this.wallet.address);
             // Send transaction
             const tx = await this.wallet.sendTransaction({
                 to: targetContract,
                 data: calldata,
-                gasLimit: GOVERNANCE_CONFIG.GAS_LIMIT
+                gasLimit: GOVERNANCE_CONFIG.GAS_LIMIT,
+                nonce: nonce
             });
 
             Helpers.log(`📨 Vote transaction sent: ${tx.hash}`, 'SUCCESS');
@@ -369,12 +371,14 @@ class GovernanceService {
 
             Helpers.log(`📝 Building create proposal calldata: "${title}"`, 'SUCCESS');
 
+            const nonce = await this.provider.getTransactionCount(this.wallet.address);
             // Send transaction
             const tx = await this.wallet.sendTransaction({
                 to: targetContract,
                 data: calldata,
                 gasLimit: GOVERNANCE_CONFIG.GAS_LIMIT,
-                value: deposit // Include deposit value
+                value: deposit, // Include deposit value
+                nonce: nonce
             });
 
             Helpers.log(`📨 Create proposal transaction sent: ${tx.hash}`, 'SUCCESS');

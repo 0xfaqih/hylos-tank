@@ -73,11 +73,13 @@ class DelegationService {
 
             Helpers.log(`📦 Building delegation calldata for ${Helpers.weiToEth(amount)} HELIOS`, 'SUCCESS');
 
+            const nonce = await this.provider.getTransactionCount(this.wallet.address);
             // Send transaction
             const tx = await this.wallet.sendTransaction({
                 to: targetContract,
                 data: calldata,
-                gasLimit: DELEGATION_CONFIG.GAS_LIMIT
+                gasLimit: DELEGATION_CONFIG.GAS_LIMIT,
+                nonce: nonce
             });
 
             Helpers.log(`📨 Delegation transaction sent: ${tx.hash}`, 'SUCCESS');
@@ -156,11 +158,13 @@ class DelegationService {
 
             Helpers.log(`🎁 Building reward delegation calldata`, 'SUCCESS');
 
+            const nonce = await this.provider.getTransactionCount(this.wallet.address);
             // Send transaction
             const tx = await this.wallet.sendTransaction({
                 to: targetContract,
                 data: calldata,
-                gasLimit: DELEGATION_CONFIG.GAS_LIMIT
+                gasLimit: DELEGATION_CONFIG.GAS_LIMIT,
+                nonce: nonce
             });
 
             Helpers.log(`📨 Claim transaction sent: ${tx.hash}`, 'SUCCESS');

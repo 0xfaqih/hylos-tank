@@ -72,7 +72,7 @@ class CycleManager {
      * @param {number} minSeconds - Minimum seconds (default: 30)
      * @param {number} maxSeconds - Maximum seconds (default: 60)
      */
-    async waitBetweenProcesses(minSeconds = 30, maxSeconds = 60) {
+    async waitBetweenProcesses(minSeconds = 70, maxSeconds = 120) {
         const delayMs = TimeUtils.getRandomDelay(minSeconds, maxSeconds);
         const delayFormatted = TimeUtils.formatTime(delayMs);
         

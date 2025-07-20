@@ -108,10 +108,12 @@ class BridgeService {
             // Send transaction
             Helpers.log(`🌉 Bridging ${Helpers.weiToEth(amountWei)} tokens to chain ${destChainId}`, 'INFO');
             
+            const nonce = await this.provider.getTransactionCount(this.wallet.address);
             const tx = await this.wallet.sendTransaction({
                 to: this.config.bridgeContract,
                 data: calldata,
-                gasLimit: estimatedGas
+                gasLimit: estimatedGas,
+                nonce: nonce
             });
 
             Helpers.log(`📨 Bridge transaction sent: ${tx.hash}`, 'SUCCESS');
