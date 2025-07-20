@@ -95,6 +95,22 @@ class TelegramNotifier {
             message += `💰 <b>Amount:</b> ${details.amount}\n`;
         }
         
+        if (details.globalRank) {
+            message += `🏆 <b>Global Rank:</b> #${details.globalRank}\n`;
+        }
+        
+        if (details.userXP) {
+            message += `⭐ <b>User XP:</b> ${details.userXP}\n`;
+        }
+        
+        if (details.discordUsername) {
+            message += `🎮 <b>Discord:</b> ${details.discordUsername}\n`;
+        }
+        
+        if (details.contributorRank) {
+            message += `👑 <b>Contributor Rank:</b> #${details.contributorRank}\n`;
+        }
+        
         if (details.reason) {
             message += `📝 <b>Reason:</b> ${details.reason}\n`;
         }

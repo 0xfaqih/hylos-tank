@@ -239,6 +239,52 @@ class FeatureExecutor {
     }
 
     /**
+     * Execute user info feature
+     * @param {Function} userInfoFunction - User info function
+     * @param {string} privateKey - Wallet private key
+     * @param {string} address - Wallet address
+     * @returns {Promise<object>} Execution result
+     */
+    async executeUserInfo(userInfoFunction, privateKey, address) {
+        if (!FEATURE_FLAGS.ENABLE_USER_INFO) {
+            Helpers.log('⏭️ User info disabled', 'INFO');
+            return { enabled: false };
+        }
+
+        try {
+            const userInfoResult = await userInfoFunction(privateKey, address);
+            
+            if (userInfoResult && userInfoResult.success) {
+                Helpers.log('✅ User info retrieved successfully', 'SUCCESS');
+                await this.telegramNotifier.sendFeatureNotification('USER INFO', true, {
+                    walletAddress: address,
+                    globalRank: userInfoResult.result.globalRank,
+                    userXP: userInfoResult.result.userXP,
+                    discordUsername: userInfoResult.result.discordUsername
+                });
+            } else {
+                Helpers.log(`⚠️ User info failed: ${userInfoResult?.reason || 'Unknown error'}`, 'WARNING');
+                await this.telegramNotifier.sendFeatureNotification('USER INFO', false, {
+                    walletAddress: address,
+                    reason: userInfoResult?.reason || 'Unknown error'
+                });
+            }
+
+            await this.cycleManager.waitBetweenProcesses();
+            
+            return { enabled: true, result: userInfoResult };
+            
+        } catch (error) {
+            Helpers.log('❌ User info failed', error, 'ERROR');
+            await this.telegramNotifier.sendFeatureNotification('USER INFO', false, {
+                walletAddress: address,
+                error: error.message
+            });
+            return { enabled: true, error: error.message };
+        }
+    }
+
+    /**
      * Execute create proposal feature
      * @param {Function} createProposalFunction - Create proposal function
      * @param {string} privateKey - Wallet private key

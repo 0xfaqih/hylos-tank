@@ -3,6 +3,7 @@ const { FaucetAutomation } = require('./src/features/faucet/faucet-automation');
 const { BridgeAutomation } = require('./src/features/bridge/bridge-automation');
 const { DelegationAutomation } = require('./src/features/delegation/delegation-automation');
 const { GovernanceAutomation } = require('./src/features/governance/governance-automation');
+const { UserInfoAutomation } = require('./src/features/userinfo/userinfo-automation');
 const { Helpers } = require('./src/utils/helpers');
 const { FEATURE_FLAGS, RETRY_CONFIG } = require('./src/config/config');
 const { AsyncUtils } = require('./src/utils/async');
@@ -21,7 +22,8 @@ class HeliosMain {
             faucet: new FaucetAutomation(),
             bridge: new BridgeAutomation(),
             delegation: new DelegationAutomation(),
-            governance: new GovernanceAutomation()
+            governance: new GovernanceAutomation(),
+            userInfo: new UserInfoAutomation(new TelegramNotifier())
         };
         
         this.telegramNotifier = new TelegramNotifier();
@@ -176,6 +178,13 @@ class HeliosMain {
             address
         );
 
+        // Execute user info (after authentication)
+        results.userInfoResult = await this.featureExecutor.executeUserInfo(
+            (pk, addr) => this.getUserInfo(pk, addr),
+            privateKey,
+            address
+        );
+
         return results;
     }
 
@@ -246,6 +255,20 @@ class HeliosMain {
             },
             RETRY_CONFIG.GOVERNANCE_MAX_ATTEMPTS,
             RETRY_CONFIG.GOVERNANCE_DELAY
+        );
+    }
+
+    async getUserInfo(privateKey, address) {
+        return await AsyncUtils.retry(
+            async () => {
+                // Set auth token from faucet service to user info service
+                if (this.services.faucet.faucet.authToken) {
+                    this.services.userInfo.setAuthToken(this.services.faucet.faucet.authToken);
+                }
+                return await this.services.userInfo.checkAndGetUserInfo(address);
+            },
+            RETRY_CONFIG.DEFAULT_MAX_ATTEMPTS,
+            RETRY_CONFIG.DEFAULT_DELAY
         );
     }
 
