@@ -177,11 +177,10 @@ class FaucetService {
         if (!this.isInitialized) {
             throw new Error('Faucet Service not initialized');
         }
-        
-        // Validate token before proceeding
-        const isTokenValid = await this.validateToken();
-        if (!isTokenValid) {
-            throw new Error('Token expired or invalid - please re-authenticate');
+
+        // Check if authenticated and token is valid
+        if (!this.authToken) {
+            throw new Error('Authentication required - call authenticate() first');
         }
 
         try {
