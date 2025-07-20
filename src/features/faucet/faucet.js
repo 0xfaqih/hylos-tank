@@ -177,11 +177,6 @@ class FaucetService {
         if (!this.isInitialized) {
             throw new Error('Faucet Service not initialized');
         }
-
-        if (!Helpers.isValidAddress(address)) {
-            throw new Error('Invalid address provided');
-        }
-
         // Check if authenticated and token is valid
         if (!this.authToken) {
             throw new Error('Authentication required - call authenticate() first');
