@@ -12,6 +12,9 @@ class FaucetService {
         this.authToken = null;
         this.wallet = null;
         this.captchaSolver = new CaptchaSolver();
+        this.tokenIssuedAt = null; 
+        this.tokenTTL = 24 * 60 * 60 * 1000; 
+        this.lastPrivateKey = null;
     }
 
     async initialize() {
@@ -55,6 +58,11 @@ class FaucetService {
         return headers;
     }
 
+    isAuthTokenValid() {
+        if (!this.authToken || !this.tokenIssuedAt) return false;
+        return (Date.now() - this.tokenIssuedAt) < this.tokenTTL;
+    }
+
     // Authenticate with wallet signature
     async authenticate(privateKey) {
         if (!privateKey) {
@@ -91,6 +99,8 @@ class FaucetService {
 
             if (response.status === 200 && response.data.success) {
                 this.authToken = response.data.token;
+                this.tokenIssuedAt = Date.now(); // simpan waktu token diterima
+                this.lastPrivateKey = privateKey; // simpan privateKey untuk re-auth otomatis
                 Helpers.log('✅ Authentication successful', 'SUCCESS');
                 return response.data;
             } else {
@@ -100,6 +110,13 @@ class FaucetService {
         } catch (error) {
             Helpers.log('Authentication failed', error, 'ERROR');
             throw error;
+        }
+    }
+
+    async ensureAuthTokenValid() {
+        if (!this.isAuthTokenValid()) {
+            if (!this.lastPrivateKey) throw new Error('Private key tidak tersedia untuk re-auth');
+            await this.authenticate(this.lastPrivateKey);
         }
     }
 
@@ -178,6 +195,8 @@ class FaucetService {
             throw new Error('Faucet Service not initialized');
         }
 
+        // Pastikan token valid sebelum lanjut
+        await this.ensureAuthTokenValid();
         // Check if authenticated and token is valid
         if (!this.authToken) {
             throw new Error('Authentication required - call authenticate() first');
@@ -273,6 +292,7 @@ class FaucetService {
             throw new Error('Faucet Service not initialized');
         }
 
+        await this.ensureAuthTokenValid();
         if (!this.authToken) {
             throw new Error('Authentication required - call authenticate() first');
         }
@@ -308,6 +328,7 @@ class FaucetService {
     // Check if address can claim (not in cooldown)
     async canClaim(address) {
         try {
+            await this.ensureAuthTokenValid();
             if (!this.authToken) {
                 Helpers.log('⚠️ No authentication - cannot check cooldown', 'WARNING');
                 return false; // Cannot claim without authentication
