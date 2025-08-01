@@ -13,7 +13,7 @@ class FaucetService {
         this.wallet = null;
         this.captchaSolver = new CaptchaSolver();
         this.tokenIssuedAt = null; 
-        this.tokenTTL = 24 * 60 * 60 * 1000; 
+        this.tokenTTL = 6 * 60 * 60 * 1000; 
         this.lastPrivateKey = null;
     }
 
