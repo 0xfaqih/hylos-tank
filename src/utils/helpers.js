@@ -78,9 +78,9 @@ class Helpers {
         return Math.round(randomAmount * 1000) / 1000;
     }
 
-    static getRandomBridgeAmount(minAmount = 0.05, maxAmount = 0.15) {
+    static getRandomSwapAmount(minAmount = 0.5, maxAmount = 7.0) {
         const randomAmount = Math.random() * (maxAmount - minAmount) + minAmount;
-        return Math.round(randomAmount * 1000) / 1000;
+        return randomAmount.toFixed(2);
     }
 
     static getRandomProposalTitle() {

@@ -12,7 +12,8 @@ const FEATURE_FLAGS = {
     ENABLE_GOVERNANCE_VOTE: true,
     ENABLE_CREATE_PROPOSAL: false,
     ENABLE_CHRONOS_DEPLOY: false,
-    ENABLE_USER_INFO: true
+    ENABLE_USER_INFO: true,
+    ENABLE_SWAP: true
 };
 
 const DELEGATION_CONFIG = {

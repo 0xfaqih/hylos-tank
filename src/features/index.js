@@ -4,6 +4,7 @@ const { FaucetService } = require('./faucet/faucet');
 const { DelegationAutomation } = require('./delegation/delegation-automation');
 const { GovernanceAutomation } = require('./governance/governance-automation');
 const { UserInfoAutomation } = require('./userinfo/userinfo-automation');
+const { SwapAutomation } = require('./swap/swap-automation');
 const { Helpers } = require('../utils/helpers');
 
 class FeatureManager {
@@ -14,6 +15,7 @@ class FeatureManager {
         this.delegation = new DelegationAutomation();
         this.governance = new GovernanceAutomation();
         this.userInfo = new UserInfoAutomation(telegramNotifier);
+        this.swap = new SwapAutomation();
         this.isInitialized = false;
     }
 
@@ -28,6 +30,7 @@ class FeatureManager {
             await this.delegation.initialize();
             await this.governance.initialize();
             await this.userInfo.initialize();
+            await this.swap.initialize();
             
             this.isInitialized = true;
             return true;
@@ -45,7 +48,8 @@ class FeatureManager {
             faucet: this.faucet.isInitialized,
             delegation: this.delegation.isInitialized,
             governance: this.governance.isInitialized,
-            userInfo: this.userInfo.isInitialized
+            userInfo: this.userInfo.isInitialized,
+            swap: this.swap.isInitialized
         };
     }
 }

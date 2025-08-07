@@ -326,6 +326,55 @@ class FeatureExecutor {
             return { enabled: true, error: 'Not available' };
         }
     }
+
+    /**
+     * Execute swap feature
+     * @param {Function} swapFunction - Swap function
+     * @param {string} privateKey - Wallet private key
+     * @param {string} address - Wallet address
+     * @returns {Promise<object>} Execution result
+     */
+    async executeSwap(swapFunction, privateKey, address) {
+        if (!FEATURE_FLAGS.ENABLE_SWAP) {
+            Helpers.log('⏭️ Swap disabled', 'INFO');
+            return { enabled: false };
+        }
+
+        try {
+            const swapAmount = Helpers.getRandomSwapAmount();
+            const swapResult = await swapFunction(privateKey, swapAmount);
+            
+            if (swapResult && swapResult.success) {
+                Helpers.log('✅ Swap transaction successful', 'SUCCESS');
+                await this.telegramNotifier.sendFeatureNotification('SWAP', true, {
+                    walletAddress: address,
+                    txHash: swapResult.txHash,
+                    amountIn: swapResult.amountIn,
+                    amountOut: swapResult.amountOut,
+                    tokenIn: swapResult.tokenIn,
+                    tokenOut: swapResult.tokenOut
+                });
+            } else {
+                Helpers.log(`⚠️ Swap transaction failed: ${swapResult?.error || 'Unknown error'}`, 'WARNING');
+                await this.telegramNotifier.sendFeatureNotification('SWAP', false, {
+                    walletAddress: address,
+                    error: swapResult?.error || 'Unknown error'
+                });
+            }
+
+            await this.cycleManager.waitBetweenProcesses();
+            
+            return { enabled: true, result: swapResult };
+            
+        } catch (error) {
+            Helpers.log('❌ Swap failed', error, 'ERROR');
+            await this.telegramNotifier.sendFeatureNotification('SWAP', false, {
+                walletAddress: address,
+                error: error.message
+            });
+            return { enabled: true, error: error.message };
+        }
+    }
 }
 
 module.exports = { FeatureExecutor }; 

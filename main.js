@@ -4,6 +4,7 @@ const { BridgeAutomation } = require('./src/features/bridge/bridge-automation');
 const { DelegationAutomation } = require('./src/features/delegation/delegation-automation');
 const { GovernanceAutomation } = require('./src/features/governance/governance-automation');
 const { UserInfoAutomation } = require('./src/features/userinfo/userinfo-automation');
+const { SwapAutomation } = require('./src/features/swap/swap-automation');
 const { Helpers } = require('./src/utils/helpers');
 const { FEATURE_FLAGS, RETRY_CONFIG } = require('./src/config/config');
 const { AsyncUtils } = require('./src/utils/async');
@@ -23,7 +24,8 @@ class HeliosMain {
             bridge: new BridgeAutomation(),
             delegation: new DelegationAutomation(),
             governance: new GovernanceAutomation(),
-            userInfo: new UserInfoAutomation(new TelegramNotifier())
+            userInfo: new UserInfoAutomation(new TelegramNotifier()),
+            swap: new SwapAutomation()
         };
         
         this.telegramNotifier = new TelegramNotifier();
@@ -185,6 +187,13 @@ class HeliosMain {
             address
         );
 
+        // Execute swap
+        results.swapResult = await this.featureExecutor.executeSwap(
+            (pk, amount) => this.executeSwap(pk, amount),
+            privateKey,
+            address
+        );
+
         return results;
     }
 
@@ -269,6 +278,16 @@ class HeliosMain {
             },
             RETRY_CONFIG.DEFAULT_MAX_ATTEMPTS,
             RETRY_CONFIG.DEFAULT_DELAY
+        );
+    }
+
+    async executeSwap(privateKey, amount = "1.0") {
+        return await AsyncUtils.retry(
+            async () => {
+                return await this.services.swap.executeSwap(privateKey, amount);
+            },
+            RETRY_CONFIG.TRANSACTION_MAX_ATTEMPTS,
+            RETRY_CONFIG.TRANSACTION_DELAY
         );
     }
 
